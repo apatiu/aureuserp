@@ -1,0 +1,97 @@
+<?php
+
+return [
+    'title' => 'รายการย่อยในสมุดรายวัน',
+
+    'navigation' => [
+        'title' => 'รายการย่อยในสมุดรายวัน',
+    ],
+
+    'table' => [
+        'total'   => 'รวม',
+        'columns' => [
+            'number'          => 'เลขที่',
+            'date'            => 'วันที่',
+            'account'         => 'บัญชี',
+            'partner'         => 'คู่ค้า',
+            'label'           => 'ป้ายกำกับ',
+            'reference'       => 'อ้างอิง',
+            'journal'         => 'สมุดรายวัน',
+            'debit'           => 'เดบิต',
+            'credit'          => 'เครดิต',
+            'balance'         => 'ยอดคงเหลือ',
+            'currency'        => 'สกุลเงิน',
+            'company'         => 'บริษัท',
+            'status'          => 'สถานะ',
+            'amount-currency' => 'จำนวนเงินตามสกุลเงิน',
+            'amount-residual' => 'ยอดคงค้าง',
+            'reconciled'      => 'กระทบยอดแล้ว',
+            'due-date'        => 'วันครบกำหนด',
+        ],
+
+        'groups' => [
+            'journal-entry' => 'รายการบันทึกบัญชี',
+            'account'       => 'บัญชี',
+            'partner'       => 'คู่ค้า',
+            'journal'       => 'สมุดรายวัน',
+            'date'          => 'วันที่',
+            'invoice-date'  => 'วันที่ใบแจ้งหนี้',
+            'matching'      => 'การจับคู่',
+            'status'        => 'สถานะ',
+            'company'       => 'บริษัท',
+        ],
+
+        'filters' => [
+            'number'          => 'เลขที่',
+            'label'           => 'ป้ายกำกับ',
+            'reference'       => 'อ้างอิง',
+            'matching-number' => 'เลขที่การจับคู่',
+            'account'         => 'บัญชี',
+            'partner'         => 'คู่ค้า',
+            'journal'         => 'สมุดรายวัน',
+            'currency'        => 'สกุลเงิน',
+            'company'         => 'บริษัท',
+            'date'            => 'วันที่',
+            'invoice-date'    => 'วันที่ใบแจ้งหนี้',
+            'due-date'        => 'วันครบกำหนด',
+            'discount-date'   => 'วันที่ได้ส่วนลด',
+            'debit'           => 'เดบิต',
+            'credit'          => 'เครดิต',
+            'balance'         => 'ยอดคงเหลือ',
+            'amount-currency' => 'จำนวนเงินตามสกุลเงิน',
+            'amount-residual' => 'ยอดคงค้าง',
+            'quantity'        => 'จำนวน',
+            'price-unit'      => 'ราคาต่อหน่วย',
+            'discount'        => 'ส่วนลด',
+            'reconciled'      => 'กระทบยอดแล้ว',
+            'imported'        => 'นำเข้าแล้ว',
+            'down-payment'    => 'เงินมัดจำ',
+            'created-at'      => 'สร้างเมื่อ',
+            'updated-at'      => 'อัปเดตเมื่อ',
+        ],
+
+        'saved-filters' => [
+            'label'         => 'ตัวกรองที่บันทึกไว้',
+            'unposted'      => 'ยังไม่ผ่านรายการ',
+            'posted'        => 'ผ่านรายการแล้ว',
+            'to-check'      => 'รอตรวจสอบ',
+            'unreconciled'  => 'ยังไม่กระทบยอด',
+            'with-residual' => 'มียอดคงค้าง',
+            'sales'         => 'การขาย',
+            'purchases'     => 'การจัดซื้อ',
+            'bank'          => 'ธนาคาร',
+            'cash'          => 'เงินสด',
+            'credit'        => 'เครดิต',
+            'miscellaneous' => 'เบ็ดเตล็ด',
+            'payable'       => 'เจ้าหนี้',
+            'receivable'    => 'ลูกหนี้',
+            'pl-accounts'   => 'บัญชีกำไรขาดทุน',
+        ],
+
+        'toolbar-actions' => [
+            'export' => [
+                'label' => 'ส่งออก',
+            ],
+        ],
+    ],
+];
