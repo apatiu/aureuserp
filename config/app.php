@@ -141,6 +141,12 @@ return [
             'flag'   => 'fr',
             'rtl'    => false,
         ],
+        'th' => [
+            'label'  => 'Thai',
+            'native' => 'ไทย',
+            'flag'   => 'th',
+            'rtl'    => false,
+        ],
     ],
 
     /*
