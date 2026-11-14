@@ -19,12 +19,12 @@ use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema as DBSchema;
-use RuntimeException;
 use Throwable;
 use Webkul\PluginManager\Console\Commands\UninstallCommand;
 use Webkul\PluginManager\Filament\Resources\PluginResource;
 use Webkul\PluginManager\Models\Plugin;
 use Webkul\PluginManager\Package;
+use Webkul\PluginManager\PluginInstaller;
 
 class PluginsTable
 {
@@ -78,10 +78,20 @@ class PluginsTable
                                 ->badge()
                                 ->inline()
                                 ->grow(false)
-                                ->formatStateUsing(fn ($record) => $record->is_installed
-                                    ? __('plugin-manager::filament/resources/plugin.status.installed')
-                                    : __('plugin-manager::filament/resources/plugin.status.not_installed'))
-                                ->color(fn ($record) => $record->is_installed ? 'success' : 'gray'),
+                                ->formatStateUsing(fn ($record) => match (static::installState($record)) {
+                                    'installed'                     => __('plugin-manager::filament/resources/plugin.status.installed'),
+                                    PluginInstaller::STATUS_QUEUED  => __('plugin-manager::filament/resources/plugin.status.queued'),
+                                    PluginInstaller::STATUS_RUNNING => __('plugin-manager::filament/resources/plugin.status.installing'),
+                                    PluginInstaller::STATUS_FAILED  => __('plugin-manager::filament/resources/plugin.status.failed'),
+                                    default                         => __('plugin-manager::filament/resources/plugin.status.not_installed'),
+                                })
+                                ->tooltip(fn ($record) => ! $record->is_installed ? PluginInstaller::status($record->name)['message'] ?? null : null)
+                                ->color(fn ($record) => match (static::installState($record)) {
+                                    'installed'                                                => 'success',
+                                    PluginInstaller::STATUS_QUEUED, PluginInstaller::STATUS_RUNNING => 'warning',
+                                    PluginInstaller::STATUS_FAILED                             => 'danger',
+                                    default                                                    => 'gray',
+                                }),
 
                             TextColumn::make('dependencies_count')
                                 ->label(__('plugin-manager::filament/resources/plugin.table.dependencies'))
@@ -95,6 +105,7 @@ class PluginsTable
                 ]),
             ])
             ->extraAttributes(['class' => 'plugins-table'])
+            ->poll(fn () => PluginInstaller::hasPendingInstalls() ? '5s' : null)
             ->contentGrid([
                 'sm'  => 1,
                 'md'  => 2,
@@ -110,74 +121,20 @@ class PluginsTable
                         ->label(__('plugin-manager::filament/resources/plugin.actions.install.title'))
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
-                        ->visible(fn ($record) => ! $record->is_installed)
+                        ->visible(fn ($record) => ! $record->is_installed && ! PluginInstaller::isPending($record->name))
                         ->requiresConfirmation()
                         ->modalHeading(fn ($record) => __('plugin-manager::filament/resources/plugin.actions.install.heading', ['name' => $record->name]))
                         ->modalDescription(fn ($record) => __('plugin-manager::filament/resources/plugin.actions.install.description', ['name' => $record->name]))
                         ->modalSubmitActionLabel(__('plugin-manager::filament/resources/plugin.actions.install.submit'))
                         ->action(function ($record) {
-                            DB::beginTransaction();
+                            PluginInstaller::queue($record, auth()->user());
 
-                            try {
-                                $phpPath = static::getPhpExecutablePath();
-
-                                $php = escapeshellarg($phpPath);
-
-                                $artisan = escapeshellarg(base_path('artisan'));
-
-                                $commandName = escapeshellarg("{$record->name}:install");
-
-                                $cmd = static::buildTimeoutCommand(300, "$php $artisan $commandName --no-interaction 2>&1");
-
-                                $output = [];
-
-                                $exitCode = 0;
-
-                                exec($cmd, $output, $exitCode);
-
-                                if ($exitCode === 124) {
-                                    throw new RuntimeException('Installation timed out after 5 minutes.');
-                                }
-
-                                if ($exitCode !== 0) {
-                                    $errorOutput = implode(PHP_EOL, array_slice($output, -10));
-
-                                    throw new RuntimeException(
-                                        "Installation failed with exit code {$exitCode}.".
-                                            ($errorOutput ? " Last output: {$errorOutput}" : '')
-                                    );
-                                }
-
-                                $record->update([
-                                    'is_installed' => true,
-                                    'is_active'    => true,
-                                ]);
-
-                                DB::commit();
-
-                                Notification::make()
-                                    ->title(__('plugin-manager::filament/resources/plugin.notifications.installed.title'))
-                                    ->body(__('plugin-manager::filament/resources/plugin.notifications.installed.body', ['name' => $record->name]))
-                                    ->success()
-                                    ->send();
-                            } catch (Throwable $e) {
-                                DB::rollBack();
-
-                                logger()->error('Plugin installation failed', [
-                                    'plugin' => $record->name,
-                                    'error'  => $e->getMessage(),
-                                    'trace'  => $e->getTraceAsString(),
-                                ]);
-
-                                Notification::make()
-                                    ->title(__('plugin-manager::filament/resources/plugin.notifications.installed-failed.title'))
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->persistent()
-                                    ->send();
-                            }
-                        })
-                        ->after(fn () => redirect(PluginResource::getUrl('index'))),
+                            Notification::make()
+                                ->title(__('plugin-manager::filament/resources/plugin.notifications.install-queued.title'))
+                                ->body(__('plugin-manager::filament/resources/plugin.notifications.install-queued.body', ['name' => $record->name]))
+                                ->info()
+                                ->send();
+                        }),
 
                     Action::make('uninstall')
                         ->label(__('plugin-manager::filament/resources/plugin.actions.uninstall.title'))
@@ -234,6 +191,15 @@ class PluginsTable
             ->recordActionsAlignment('end')
             ->defaultSort('sort', 'asc')
             ->paginated([16, 24, 32]);
+    }
+
+    private static function installState(Plugin $record): string
+    {
+        if ($record->is_installed) {
+            return 'installed';
+        }
+
+        return PluginInstaller::status($record->name)['status'] ?? 'not_installed';
     }
 
     private static function uninstallPlugin($record)
@@ -347,15 +313,5 @@ class PluginsTable
 
             DB::table('migrations')->where('migration', $migration)->delete();
         }
-    }
-
-    private static function getPhpExecutablePath(): string
-    {
-        return Package::phpBinaryPath();
-    }
-
-    private static function buildTimeoutCommand(int $seconds, string $command): string
-    {
-        return Package::buildTimeoutCommand($seconds, $command);
     }
 }
