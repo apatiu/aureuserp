@@ -1,5 +1,6 @@
 <?php
 
+use Aall\ThaiLocalization\ThaiLocalizationServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\Filament\AdminPanelProvider;
 use App\Providers\Filament\CustomerPanelProvider;
@@ -69,5 +70,6 @@ return [
     FullCalendarServiceProvider::class,
     TimesheetServiceProvider::class,
     WebsiteServiceProvider::class,
+    ThaiLocalizationServiceProvider::class,
     PluginManagerServiceProvider::class,
 ];

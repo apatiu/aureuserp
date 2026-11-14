@@ -1,0 +1,29 @@
+{
+    "name": "aall/thai-localization",
+    "description": "Thai localization: VAT 7%, withholding tax 1/3/5% and Thai tax accounts",
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "A ALL"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Aall\\ThaiLocalization\\ThaiLocalizationServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Aall\\ThaiLocalization\\": "src/",
+            "Aall\\ThaiLocalization\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Aall\\ThaiLocalization\\Tests\\": "tests/"
+        }
+    }
+}
