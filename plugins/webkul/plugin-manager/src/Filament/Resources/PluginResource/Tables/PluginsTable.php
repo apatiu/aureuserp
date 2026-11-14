@@ -87,10 +87,10 @@ class PluginsTable
                                 })
                                 ->tooltip(fn ($record) => ! $record->is_installed ? PluginInstaller::status($record->name)['message'] ?? null : null)
                                 ->color(fn ($record) => match (static::installState($record)) {
-                                    'installed'                                                => 'success',
+                                    'installed'                                                     => 'success',
                                     PluginInstaller::STATUS_QUEUED, PluginInstaller::STATUS_RUNNING => 'warning',
-                                    PluginInstaller::STATUS_FAILED                             => 'danger',
-                                    default                                                    => 'gray',
+                                    PluginInstaller::STATUS_FAILED                                  => 'danger',
+                                    default                                                         => 'gray',
                                 }),
 
                             TextColumn::make('dependencies_count')
