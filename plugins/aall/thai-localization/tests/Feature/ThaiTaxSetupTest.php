@@ -7,6 +7,7 @@ use Webkul\Account\Enums\DisplayType;
 use Webkul\Account\Enums\MoveType;
 use Webkul\PluginManager\Models\Plugin;
 use Webkul\PluginManager\Package;
+use Webkul\Support\Models\Company;
 
 require_once __DIR__.'/../../../../webkul/support/tests/Helpers/TestBootstrapHelper.php';
 require_once __DIR__.'/../../../../webkul/accounts/tests/Helpers/AccountHelper.php';
@@ -84,4 +85,26 @@ it('posts VAT and withholding to the Thai tax accounts', function () {
         '215400' => -70.0,
         '115500' => 30.0,
     ]);
+});
+
+it('gives a second company journals, the chart of accounts and Thai taxes', function () {
+    $second = Company::create([
+        'name'        => 'Second Test Company',
+        'currency_id' => $this->company->currency_id,
+        'country_id'  => $this->company->country_id,
+        'creator_id'  => $this->user->id,
+    ]);
+
+    $this->artisan('thai-localization:setup', ['company' => [$second->id]])->assertSuccessful();
+
+    $templateJournalCount = DB::table('accounts_journals')->where('company_id', $this->company->id)->count();
+
+    expect(DB::table('accounts_journals')->where('company_id', $second->id)->count())->toBe($templateJournalCount)
+        ->and(DB::table('accounts_account_companies')->where('company_id', $second->id)->count())
+        ->toBe(DB::table('accounts_account_companies')->where('company_id', $this->company->id)->count())
+        ->and(DB::table('accounts_taxes')->where('company_id', $second->id)->count())->toBe(8);
+
+    $this->artisan('thai-localization:setup', ['company' => [$second->id]])->assertSuccessful();
+
+    expect(DB::table('accounts_journals')->where('company_id', $second->id)->count())->toBe($templateJournalCount);
 });

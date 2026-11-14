@@ -151,7 +151,7 @@ class ThaiTaxSetup
 
     protected function ensureTax(Company $company, ?int $creatorId, array $attributes, int $taxAccountId, bool $useInTaxClosing): Tax
     {
-        $existing = Tax::query()
+        $existing = Tax::withoutGlobalScopes()
             ->where('company_id', $company->id)
             ->where('type_tax_use', $attributes['type_tax_use'])
             ->where('name', $attributes['name'])
@@ -201,7 +201,7 @@ class ThaiTaxSetup
             }
         }
 
-        return Tax::findOrFail($taxId);
+        return Tax::withoutGlobalScopes()->findOrFail($taxId);
     }
 
     protected function thailandId(): ?int
