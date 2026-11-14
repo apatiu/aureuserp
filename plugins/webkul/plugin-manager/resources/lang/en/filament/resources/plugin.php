@@ -13,6 +13,9 @@ return [
     'status' => [
         'installed'     => 'Installed',
         'not_installed' => 'Not Installed',
+        'queued'        => 'Queued',
+        'installing'    => 'Installing…',
+        'failed'        => 'Install Failed',
     ],
 
     'filters' => [
@@ -42,11 +45,17 @@ return [
 
     'notifications' => [
         'installed' => [
-            'title' => 'Plugin Installed Successfully',
-            'body'  => "The ':name' plugin has been installed.",
+            'title'  => 'Plugin Installed Successfully',
+            'body'   => "The ':name' plugin has been installed.",
+            'reload' => 'Reload Plugins',
         ],
         'installed-failed' => [
-            'title' => 'Installation Failed',
+            'title'   => 'Installation Failed',
+            'timeout' => 'Installation timed out after :minutes minutes.',
+        ],
+        'install-queued' => [
+            'title' => 'Installation Started',
+            'body'  => "The ':name' plugin is being installed in the background. You will get a notification when it finishes. This needs a running queue worker (php artisan queue:work).",
         ],
         'uninstalled' => [
             'title' => 'Plugin Uninstalled Successfully',

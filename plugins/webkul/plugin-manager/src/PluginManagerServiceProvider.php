@@ -21,6 +21,7 @@ class PluginManagerServiceProvider extends PackageServiceProvider
             ->isCore()
             ->hasViews()
             ->hasTranslations()
+            ->hasConfigFile()
             ->hasMigrations([
                 '2024_11_05_105102_create_plugins_table',
             ])
